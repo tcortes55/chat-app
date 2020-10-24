@@ -69,15 +69,14 @@ namespace ChatApp
                 {
                     if (_users.ContainsKey(message.Sender))
                     {
-                        await currentSocket.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Closing", cancellationToken);
-                        currentSocket.Dispose();
-
-                        _sockets.TryRemove(socketId, out _);
+                        await CloseSocket(socketId, $"Username \"{message.Sender}\" already exists.", cancellationToken);
                     }
                     else
                     {
                         username = message.Sender;
                         _users.TryAdd(username, socketId);
+
+                        await SendMessageToAllAsync($"User {username} joined the room.", cancellationToken);
                     }
                 }
                 else if (message.IsTypeChat())
@@ -89,15 +88,23 @@ namespace ChatApp
 
             }
 
-            _sockets.TryRemove(socketId, out _);
+            await CloseSocket(socketId, $"User {username} disconnected", cancellationToken, username);
+            await SendMessageToAllAsync($"User {username} left the room", cancellationToken);
+        }
 
+        private async Task CloseSocket(string socketId, string closingMessage, CancellationToken cancellationToken, string username = "")
+        {
+            var socket = _sockets[socketId];
+
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, closingMessage, cancellationToken);
+            socket.Dispose();
+
+            _sockets.TryRemove(socketId, out _);
+            
             if (!string.IsNullOrEmpty(username))
             {
                 _users.TryRemove(username, out _);
             }
-
-            await currentSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);
-            currentSocket.Dispose();
         }
 
         private async Task SendMessageToAllAsync(string data, CancellationToken ct = default(CancellationToken))
