@@ -16,6 +16,7 @@ namespace ChatApp
     public class WebSocketMiddleware
     {
         private static ConcurrentDictionary<string, WebSocket> _sockets = new ConcurrentDictionary<string, WebSocket>();
+        private static ConcurrentDictionary<string, string> _users = new ConcurrentDictionary<string, string>();
 
         private readonly RequestDelegate _next;
 
@@ -57,15 +58,25 @@ namespace ChatApp
                     continue;
                 }
 
-                foreach (var socket in _sockets)
-                {
-                    if (socket.Value.State != WebSocketState.Open)
-                    {
-                        continue;
-                    }
+                AppMessage message = JsonSerializer.Deserialize<AppMessage>(response);
 
-                    await SendMessageAsync(socket.Value, response, cancellationToken);
+                if (message.Type.ToUpper() == MessageType.CONNECTION.ToString())
+                {
+
                 }
+                else if (message.Type.ToUpper() == MessageType.CHAT.ToString())
+                {
+                    foreach (var socket in _sockets)
+                    {
+                        if (socket.Value.State != WebSocketState.Open)
+                        {
+                            continue;
+                        }
+
+                        await SendMessageAsync(socket.Value, response, cancellationToken);
+                    }
+                }
+
             }
 
             WebSocket dummy;
