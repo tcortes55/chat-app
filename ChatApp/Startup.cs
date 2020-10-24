@@ -35,6 +35,15 @@ namespace ChatApp
                     await context.Response.WriteAsync("Hello World!");
                 });
             });
+
+            var webSocketOptions = new WebSocketOptions()
+            {
+                KeepAliveInterval = TimeSpan.FromSeconds(120),
+                ReceiveBufferSize = 4 * 1024
+            };
+
+            app.UseWebSockets(webSocketOptions);
+            app.UseMiddleware<WebSocketMiddleware>();
         }
     }
 }
