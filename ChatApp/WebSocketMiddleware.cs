@@ -36,6 +36,7 @@ namespace ChatApp
             CancellationToken cancellationToken = context.RequestAborted;
             WebSocket currentSocket = await context.WebSockets.AcceptWebSocketAsync();
             var socketId = Guid.NewGuid().ToString();
+            var username = string.Empty;
 
             _sockets.TryAdd(socketId, currentSocket);
 
@@ -66,30 +67,50 @@ namespace ChatApp
 
                 if (message.IsTypeConnection())
                 {
+                    if (_users.ContainsKey(message.Sender))
+                    {
+                        await currentSocket.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Closing", cancellationToken);
+                        currentSocket.Dispose();
 
+                        _sockets.TryRemove(socketId, out _);
+                    }
+                    else
+                    {
+                        username = message.Sender;
+                        _users.TryAdd(username, socketId);
+                    }
                 }
                 else if (message.IsTypeChat())
                 {
                     string messageBody = message.BuildMessageBody();
 
-                    foreach (var socket in _sockets)
-                    {
-                        if (socket.Value.State != WebSocketState.Open)
-                        {
-                            continue;
-                        }
-
-                        await SendMessageAsync(socket.Value, messageBody, cancellationToken);
-                    }
+                    await SendMessageToAllAsync(messageBody, cancellationToken);
                 }
 
             }
 
-            WebSocket dummy;
-            _sockets.TryRemove(socketId, out dummy);
+            _sockets.TryRemove(socketId, out _);
+
+            if (!string.IsNullOrEmpty(username))
+            {
+                _users.TryRemove(username, out _);
+            }
 
             await currentSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);
             currentSocket.Dispose();
+        }
+
+        private async Task SendMessageToAllAsync(string data, CancellationToken ct = default(CancellationToken))
+        {
+            foreach (var socket in _sockets)
+            {
+                if (socket.Value.State != WebSocketState.Open)
+                {
+                    continue;
+                }
+
+                await SendMessageAsync(socket.Value, data, ct);
+            }
         }
 
         private static Task SendMessageAsync(WebSocket socket, string data, CancellationToken ct = default(CancellationToken))
