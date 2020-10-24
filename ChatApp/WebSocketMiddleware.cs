@@ -59,13 +59,19 @@ namespace ChatApp
                 }
 
                 AppMessage message = JsonSerializer.Deserialize<AppMessage>(response);
+                if (!message.IsValid())
+                {
+                    continue;
+                }
 
-                if (message.Type.ToUpper() == MessageType.CONNECTION.ToString())
+                if (message.IsTypeConnection())
                 {
 
                 }
-                else if (message.Type.ToUpper() == MessageType.CHAT.ToString())
+                else if (message.IsTypeChat())
                 {
+                    string messageBody = message.BuildMessageBody();
+
                     foreach (var socket in _sockets)
                     {
                         if (socket.Value.State != WebSocketState.Open)
@@ -73,7 +79,7 @@ namespace ChatApp
                             continue;
                         }
 
-                        await SendMessageAsync(socket.Value, response, cancellationToken);
+                        await SendMessageAsync(socket.Value, messageBody, cancellationToken);
                     }
                 }
 
