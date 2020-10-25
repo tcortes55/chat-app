@@ -135,7 +135,7 @@
                 }
 
                 if (receivedMessage.Type === "CONNECTION" && receivedMessage.Users) {
-                    usersList.options = [];
+                    usersList.options.length = 0;;
                     var cFirst = document.createElement("option");
                     cFirst.value = "";
                     cFirst.text = "Everybody"
