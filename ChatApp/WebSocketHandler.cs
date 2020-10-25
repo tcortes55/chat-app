@@ -26,7 +26,7 @@ namespace ChatApp
         {
             if (ConnectionManager.UsernameAlreadyExists(username))
             {
-                await ConnectionManager.RemoveSocket(ConnectionManager.GetId(socket));
+                await ConnectionManager.RemoveSocket(ConnectionManager.GetId(socket), $"User {username} already exists");
                 return false;
             }
             else
