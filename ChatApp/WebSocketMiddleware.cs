@@ -59,7 +59,7 @@ namespace ChatApp
                     continue;
                 }
 
-                AppMessage message = JsonSerializer.Deserialize<AppMessage>(response);
+                ClientMessage message = JsonSerializer.Deserialize<ClientMessage>(response);
                 if (!message.IsValid())
                 {
                     continue;
@@ -76,14 +76,23 @@ namespace ChatApp
                         username = message.Sender;
                         _users.TryAdd(username, socketId);
 
-                        await SendMessageToAllAsync($"User {username} joined the room.", cancellationToken);
+                        ServerMessage serverMessage = new ServerMessage();
+                        serverMessage.Type = MessageType.CONNECTION.ToString();
+                        serverMessage.Content = $"User {username} joined the room.";
+                        serverMessage.Users = _users.Select(x => x.Key).ToList();
+
+                        await SendMessageToAllAsync(JsonSerializer.Serialize(serverMessage), cancellationToken);
                     }
                 }
                 else if (message.IsTypeChat())
                 {
                     string messageBody = message.BuildMessageBody();
 
-                    await SendMessageToAllAsync(messageBody, cancellationToken);
+                    ServerMessage serverMessage = new ServerMessage();
+                    serverMessage.Type = MessageType.CHAT.ToString();
+                    serverMessage.Content = messageBody;
+
+                    await SendMessageToAllAsync(JsonSerializer.Serialize(serverMessage), cancellationToken);
                 }
 
             }

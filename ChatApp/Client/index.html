@@ -23,7 +23,6 @@
     <div id="chatLog"></div>
 
     <script>
-        //var connectionUrl = document.getElementById("connectionUrl");
         var userName = document.getElementById("userName");
         var connectButton = document.getElementById("connectButton");
         var stateLabel = document.getElementById("stateLabel");
@@ -32,9 +31,6 @@
         var chatLog = document.getElementById("chatLog");
         var closeButton = document.getElementById("closeButton");
         var socket;
-
-        //var scheme = document.location.protocol === "https:" ? "wss" : "ws";
-        //var port = document.location.port ? (":" + document.location.port) : "";
 
         var connectionUrl = "ws://localhost:58078/ws";
 
@@ -50,7 +46,6 @@
                 closeButton.disabled = false;
             }
 
-            //connectionUrl.disabled = true;
             connectButton.disabled = true;
 
             if (!socket) {
@@ -105,10 +100,8 @@
             console.log(JSON.stringify(message));
 
             socket.send(JSON.stringify(message));
-            //commsLog.innerHTML += '<tr>' +
-            //    '<td class="commslog-client">Client</td>' +
-            //    '<td class="commslog-server">Server</td>' +
-            //    '<td class="commslog-data">' + htmlEscape(data) + '</td></tr>';
+
+            sendMessage.value = "";
         };
 
         connectButton.onclick = function () {
@@ -123,10 +116,6 @@
                 message.Sender = userName.value;
                 console.log(JSON.stringify(message));
                 socket.send(JSON.stringify(message));
-
-                //commsLog.innerHTML += '<tr>' +
-                //    '<td colspan="3" class="commslog-data">Connection opened</td>' +
-                //    '</tr>';
             };
             socket.onclose = function (event) {
                 updateState();

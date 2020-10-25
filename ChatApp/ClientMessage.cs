@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ChatApp
 {
-    public class AppMessage
+    public class ClientMessage
     {
         public string Type { get; set; }
         public string Sender { get; set; }
