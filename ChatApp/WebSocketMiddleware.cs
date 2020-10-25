@@ -76,12 +76,13 @@ namespace ChatApp
                         username = message.Sender;
                         _users.TryAdd(username, socketId);
 
-                        ServerMessage serverMessage = new ServerMessage();
-                        serverMessage.Type = MessageType.CONNECTION.ToString();
-                        serverMessage.Content = $"User {username} joined the room.";
-                        serverMessage.Users = _users.Select(x => x.Key).ToList();
+                        ServerMessage connectMessage = new ServerMessage(
+                            MessageType.CONNECTION,
+                            $"User {username} joined the room.",
+                            _users.Select(x => x.Key).ToList()
+                            );
 
-                        await SendMessageToAllAsync(JsonSerializer.Serialize(serverMessage), cancellationToken);
+                        await SendMessageToAllAsync(JsonSerializer.Serialize(connectMessage), cancellationToken);
                     }
                 }
                 else if (message.IsTypeChat())
@@ -98,7 +99,14 @@ namespace ChatApp
             }
 
             await CloseSocket(socketId, $"User {username} disconnected", cancellationToken, username);
-            await SendMessageToAllAsync($"User {username} left the room", cancellationToken);
+            
+            ServerMessage disconnectMessage = new ServerMessage(
+                MessageType.CONNECTION,
+                $"User {username} left the room.",
+                _users.Select(x => x.Key).ToList()
+                );
+
+            await SendMessageToAllAsync(JsonSerializer.Serialize(disconnectMessage), cancellationToken);
         }
 
         private async Task CloseSocket(string socketId, string closingMessage, CancellationToken cancellationToken, string username = "")

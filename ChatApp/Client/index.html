@@ -15,6 +15,9 @@
     <div>
         <label for="sendMessage">Message to send:</label>
         <input id="sendMessage" disabled />
+        <select name="usersList" id="usersList">
+            <option value="">Everybody</option>
+        </select>
         <button id="sendButton" type="submit" disabled>Send</button>
         <button id="closeButton" disabled>Disconnect</button>
     </div>
@@ -24,6 +27,7 @@
 
     <script>
         var userName = document.getElementById("userName");
+        var usersList = document.getElementById("usersList");
         var connectButton = document.getElementById("connectButton");
         var stateLabel = document.getElementById("stateLabel");
         var sendMessage = document.getElementById("sendMessage");
@@ -95,7 +99,7 @@
             message.Type = "chat";
             message.Sender = userName.value;
             message.Content = data;
-            message.Receiver = "";
+            message.Receiver = usersList.value;
             message.IsPrivate = false;
             console.log(JSON.stringify(message));
 
@@ -123,7 +127,19 @@
             };
             socket.onerror = updateState;
             socket.onmessage = function (event) {
-                chatLog.innerHTML += '<p>' + htmlEscape(event.data) + '</p>';
+                console.log(event.data);
+                var receivedMessage = JSON.parse(event.data);
+                chatLog.innerHTML += '<p>' + htmlEscape(receivedMessage.Content) + '</p>';
+
+                if (receivedMessage.Type === "CONNECTION") {
+                    receivedMessage.Users.forEach((user) => {
+                        var c = document.createElement("option");
+                        c.value = user;
+                        c.text = user;
+
+                        usersList.options.add(c);
+                    });
+                }
             };
         };
 
