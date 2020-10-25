@@ -37,7 +37,7 @@ namespace ChatApp
             return true;
         }
 
-        public string BuildMessageBody()
+        public string BuildChatMessageBody()
         {
             string receiver = this.Receiver == string.Empty ? "Everybody" : this.Receiver;
 
