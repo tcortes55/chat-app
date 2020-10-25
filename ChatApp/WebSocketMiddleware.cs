@@ -47,17 +47,7 @@ namespace ChatApp
             {
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
-
-
-                    //await _webSocketHandler.ReceiveAsync(socket, result, buffer);
                     var msg = _webSocketHandler.ReceiveString(result, buffer);
-
-                    //bool validate = await _webSocketHandler.ValidateConnection(socket, GetUsername(msg));
-
-                    //if (validate)
-                    //{
-                    //    await _webSocketHandler.ForwardMessage(msg);
-                    //}
 
                     await HandleMessage(socket, msg);
 
@@ -152,25 +142,15 @@ namespace ChatApp
 
                 if (validate)
                 {
-                    await _webSocketHandler.BroadcastMessage(message);
+                    ServerMessage serverMessage = new ServerMessage(clientMessage, false);
+                    await _webSocketHandler.BroadcastMessage(JsonSerializer.Serialize(serverMessage));
                 }
             }
             else if (clientMessage.IsTypeChat())
             {
-                await _webSocketHandler.BroadcastMessage(message);
+                ServerMessage serverMessage = new ServerMessage(clientMessage, false);
+                await _webSocketHandler.BroadcastMessage(JsonSerializer.Serialize(serverMessage));
             }
-        }
-
-        private void ValidateUsername(string message)
-        {
-            ClientMessage clientMessage = JsonSerializer.Deserialize<ClientMessage>(message);
-        }
-
-        private string GetUsername(string message)
-        {
-            ClientMessage clientMessage = JsonSerializer.Deserialize<ClientMessage>(message);
-
-            return clientMessage.Sender;
         }
 
         private async Task Receive(WebSocket socket, Action<WebSocketReceiveResult, byte[]> handleMessage)

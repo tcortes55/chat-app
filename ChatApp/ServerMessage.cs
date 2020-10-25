@@ -19,6 +19,12 @@ namespace ChatApp
             Users = users;
         }
 
+        public ServerMessage(ClientMessage clientMessage, bool isDisconnect)
+        {
+            Type = clientMessage.GetMessageType();
+            Content = clientMessage.BuildMessageBody(isDisconnect);
+        }
+
         public string Type { get; set; }
         public string Content { get; set; }
         public List<string> Users { get; set; }
