@@ -11,16 +11,10 @@ namespace ChatApp
     public class ConnectionManager
     {
         private static ConcurrentDictionary<string, WebSocket> _sockets = new ConcurrentDictionary<string, WebSocket>();
-        private static ConcurrentDictionary<string, string> _users = new ConcurrentDictionary<string, string>();
+        //private static ConcurrentDictionary<string, string> _users = new ConcurrentDictionary<string, string>();
 
         public WebSocket GetSocketById(string id)
         {
-            return _sockets.FirstOrDefault(p => p.Key == id).Value;
-        }
-
-        public WebSocket GetSocketByUsername(string username)
-        {
-            string id = _users[username];
             return _sockets.FirstOrDefault(p => p.Key == id).Value;
         }
 
@@ -44,9 +38,6 @@ namespace ChatApp
         {
             WebSocket socket;
             _sockets.TryRemove(id, out socket);
-
-            //string username = _users.FirstOrDefault(p => p.Value == id).Key;
-            //_users.TryRemove(username, out _);
 
             await socket.CloseAsync(closeStatus: WebSocketCloseStatus.NormalClosure,
                                     statusDescription: "Closed by the ConnectionManager",

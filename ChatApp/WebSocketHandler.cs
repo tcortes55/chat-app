@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ChatApp
 {
-    public class WebSocketHandler
+    public abstract class WebSocketHandler
     {
         protected ConnectionManager ConnectionManager { get; set; }
 

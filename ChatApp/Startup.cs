@@ -18,11 +18,11 @@ namespace ChatApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<ConnectionManager>();
-            services.AddSingleton<WebSocketHandler>();
+            services.AddSingleton<ChatHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, WebSocketHandler handler)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ChatHandler handler)
         {
             if (env.IsDevelopment())
             {
