@@ -129,7 +129,10 @@
             socket.onmessage = function (event) {
                 console.log(event.data);
                 var receivedMessage = JSON.parse(event.data);
-                chatLog.innerHTML += '<p>' + htmlEscape(receivedMessage.Content) + '</p>';
+
+                if (receivedMessage.Content) {
+                    chatLog.innerHTML += '<p>' + htmlEscape(receivedMessage.Content) + '</p>';
+                }
 
                 if (receivedMessage.Type === "CONNECTION") {
                     receivedMessage.Users.forEach((user) => {

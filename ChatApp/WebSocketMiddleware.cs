@@ -15,14 +15,16 @@ namespace ChatApp
 {
     public class WebSocketMiddleware
     {
-        private static ConcurrentDictionary<string, WebSocket> _sockets = new ConcurrentDictionary<string, WebSocket>();
-        private static ConcurrentDictionary<string, string> _users = new ConcurrentDictionary<string, string>();
+        //private static ConcurrentDictionary<string, WebSocket> _sockets = new ConcurrentDictionary<string, WebSocket>();
+        //private static ConcurrentDictionary<string, string> _users = new ConcurrentDictionary<string, string>();
 
         private readonly RequestDelegate _next;
+        private WebSocketHandler _webSocketHandler { get; set; }
 
-        public WebSocketMiddleware(RequestDelegate next)
+        public WebSocketMiddleware(RequestDelegate next, WebSocketHandler webSocketHandler)
         {
             _next = next;
+            _webSocketHandler = webSocketHandler;
         }
 
         public async Task Invoke(HttpContext context)
@@ -33,19 +35,37 @@ namespace ChatApp
                 return;
             }
 
-            CancellationToken cancellationToken = context.RequestAborted;
-            WebSocket currentSocket = await context.WebSockets.AcceptWebSocketAsync();
-            var socketId = Guid.NewGuid().ToString();
-            var username = string.Empty;
+            //CancellationToken cancellationToken = context.RequestAborted;
+            WebSocket socket = await context.WebSockets.AcceptWebSocketAsync();
+            await _webSocketHandler.OnConnected(socket);
+            //var socketId = Guid.NewGuid().ToString();
+            //var username = string.Empty;
 
-            _sockets.TryAdd(socketId, currentSocket);
+            //_sockets.TryAdd(socketId, currentSocket);
 
-            while (true)
+            await Receive(socket, async (result, buffer) =>
             {
-                if (cancellationToken.IsCancellationRequested)
+                if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    break;
+                    await _webSocketHandler.ReceiveAsync(socket, result, buffer);
+                    return;
                 }
+
+                else if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    await _webSocketHandler.OnDisconnected(socket);
+                    return;
+                }
+
+            });
+
+            while (false)
+            {
+                /*
+                //if (cancellationToken.IsCancellationRequested)
+                //{
+                //    break;
+                //}
 
                 var response = await ReceiveMessageAsync(currentSocket, cancellationToken);
 
@@ -95,46 +115,59 @@ namespace ChatApp
 
                     await SendMessageToAllAsync(JsonSerializer.Serialize(serverMessage), cancellationToken);
                 }
-
+                */
             }
 
-            await CloseSocket(socketId, $"User {username} disconnected", cancellationToken, username);
+            //await CloseSocket(socketId, $"User {username} disconnected", cancellationToken, username);
             
-            ServerMessage disconnectMessage = new ServerMessage(
-                MessageType.CONNECTION,
-                $"User {username} left the room.",
-                _users.Select(x => x.Key).ToList()
-                );
+            //ServerMessage disconnectMessage = new ServerMessage(
+            //    MessageType.CONNECTION,
+            //    $"User {username} left the room.",
+            //    _users.Select(x => x.Key).ToList()
+            //    );
 
-            await SendMessageToAllAsync(JsonSerializer.Serialize(disconnectMessage), cancellationToken);
+            //await SendMessageToAllAsync(JsonSerializer.Serialize(disconnectMessage), cancellationToken);
+        }
+
+        private async Task Receive(WebSocket socket, Action<WebSocketReceiveResult, byte[]> handleMessage)
+        {
+            var buffer = new byte[1024 * 4];
+
+            while (socket.State == WebSocketState.Open)
+            {
+                var result = await socket.ReceiveAsync(buffer: new ArraySegment<byte>(buffer),
+                                                       cancellationToken: CancellationToken.None);
+
+                handleMessage(result, buffer);
+            }
         }
 
         private async Task CloseSocket(string socketId, string closingMessage, CancellationToken cancellationToken, string username = "")
         {
-            var socket = _sockets[socketId];
+            //var socket = _sockets[socketId];
 
-            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, closingMessage, cancellationToken);
-            socket.Dispose();
+            //await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, closingMessage, cancellationToken);
+            //socket.Dispose();
 
-            _sockets.TryRemove(socketId, out _);
+            //_sockets.TryRemove(socketId, out _);
             
-            if (!string.IsNullOrEmpty(username))
-            {
-                _users.TryRemove(username, out _);
-            }
+            //if (!string.IsNullOrEmpty(username))
+            //{
+            //    _users.TryRemove(username, out _);
+            //}
         }
 
         private async Task SendMessageToAllAsync(string data, CancellationToken ct = default(CancellationToken))
         {
-            foreach (var socket in _sockets)
-            {
-                if (socket.Value.State != WebSocketState.Open)
-                {
-                    continue;
-                }
+            //foreach (var socket in _sockets)
+            //{
+            //    if (socket.Value.State != WebSocketState.Open)
+            //    {
+            //        continue;
+            //    }
 
-                await SendMessageAsync(socket.Value, data, ct);
-            }
+            //    await SendMessageAsync(socket.Value, data, ct);
+            //}
         }
 
         private static Task SendMessageAsync(WebSocket socket, string data, CancellationToken ct = default(CancellationToken))
