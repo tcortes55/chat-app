@@ -166,12 +166,20 @@ namespace ChatApp
         {
             var buffer = new byte[1024 * 4];
 
-            while (socket.State == WebSocketState.Open)
+            try
             {
-                var result = await socket.ReceiveAsync(buffer: new ArraySegment<byte>(buffer),
-                                                       cancellationToken: CancellationToken.None);
+                while (socket.State == WebSocketState.Open)
+                {
+                    var result = await socket.ReceiveAsync(buffer: new ArraySegment<byte>(buffer),
+                                                           cancellationToken: CancellationToken.None);
 
-                handleMessage(result, buffer);
+                    handleMessage(result, buffer);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                await HandleDisconnect(socket);
             }
         }
 

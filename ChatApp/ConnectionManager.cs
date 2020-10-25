@@ -56,9 +56,12 @@ namespace ChatApp
             WebSocket socket;
             _sockets.TryRemove(id, out socket);
 
-            await socket.CloseAsync(closeStatus: WebSocketCloseStatus.NormalClosure,
+            if (socket.State != WebSocketState.Aborted)
+            {
+                await socket.CloseAsync(closeStatus: WebSocketCloseStatus.NormalClosure,
                                     statusDescription: "Closed by the ConnectionManager",
                                     cancellationToken: CancellationToken.None);
+            }
         }
 
         public void RemoveUser(string username)
