@@ -22,9 +22,25 @@ namespace ChatApp
             ConnectionManager.AddSocket(socket);
         }
 
+        public virtual async Task<bool> ValidateConnection(WebSocket socket, string username)
+        {
+            if (ConnectionManager.UsernameAlreadyExists(username))
+            {
+                await ConnectionManager.RemoveSocket(ConnectionManager.GetId(socket));
+                return false;
+            }
+            else
+            {
+                ConnectionManager.AddUser(socket, username);
+                return true;
+            }
+        }
+
         public virtual async Task OnDisconnected(WebSocket socket)
         {
-            await ConnectionManager.RemoveSocket(ConnectionManager.GetId(socket));
+            string socketId = ConnectionManager.GetId(socket);
+            await ConnectionManager.RemoveSocket(socketId);
+            ConnectionManager.RemoveUser(socketId);
         }
 
         public async Task SendMessageAsync(WebSocket socket, string message)
@@ -58,6 +74,16 @@ namespace ChatApp
         {
             var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
 
+            await SendMessageToAllAsync(message);
+        }
+
+        public string ReceiveString(WebSocketReceiveResult result, byte[] buffer)
+        {
+            return Encoding.UTF8.GetString(buffer, 0, result.Count);
+        }
+
+        public async Task BroadcastMessage(string message)
+        {
             await SendMessageToAllAsync(message);
         }
 

@@ -11,7 +11,7 @@ namespace ChatApp
     public class ConnectionManager
     {
         private static ConcurrentDictionary<string, WebSocket> _sockets = new ConcurrentDictionary<string, WebSocket>();
-        //private static ConcurrentDictionary<string, string> _users = new ConcurrentDictionary<string, string>();
+        private static ConcurrentDictionary<string, string> _users = new ConcurrentDictionary<string, string>();
 
         public WebSocket GetSocketById(string id)
         {
@@ -34,6 +34,12 @@ namespace ChatApp
             _sockets.TryAdd(socketId, socket);
         }
 
+        public void AddUser(WebSocket socket, string username)
+        {
+            string socketId = GetId(socket);
+            _users.TryAdd(username, socketId);
+        }
+
         public async Task RemoveSocket(string id)
         {
             WebSocket socket;
@@ -42,6 +48,17 @@ namespace ChatApp
             await socket.CloseAsync(closeStatus: WebSocketCloseStatus.NormalClosure,
                                     statusDescription: "Closed by the ConnectionManager",
                                     cancellationToken: CancellationToken.None);
+        }
+
+        public void RemoveUser(string socketId)
+        {
+            string username = _users.FirstOrDefault(p => p.Value == socketId).Key;
+            _users.TryRemove(username, out _);
+        }
+
+        public bool UsernameAlreadyExists(string username)
+        {
+            return _users.ContainsKey(username);
         }
 
         private string CreateConnectionId()
