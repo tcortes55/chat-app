@@ -23,10 +23,21 @@ namespace ChatApp
             return _sockets;
         }
 
+        public List<string> GetAllUsernames()
+        {
+            return _users.Select(p => p.Key).ToList();
+        }
+
         public string GetId(WebSocket socket)
         {
             return _sockets.FirstOrDefault(p => p.Value == socket).Key;
         }
+
+        public string GetUsernameBySocketId(string socketId)
+        {
+            return _users.FirstOrDefault(p => p.Value == socketId).Key;
+        }
+
 
         public void AddSocket(WebSocket socket)
         {
@@ -50,9 +61,8 @@ namespace ChatApp
                                     cancellationToken: CancellationToken.None);
         }
 
-        public void RemoveUser(string socketId)
+        public void RemoveUser(string username)
         {
-            string username = _users.FirstOrDefault(p => p.Value == socketId).Key;
             _users.TryRemove(username, out _);
         }
 

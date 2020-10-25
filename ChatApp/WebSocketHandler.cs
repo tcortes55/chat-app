@@ -36,11 +36,15 @@ namespace ChatApp
             }
         }
 
-        public virtual async Task OnDisconnected(WebSocket socket)
+        public virtual async Task<string> OnDisconnected(WebSocket socket)
         {
             string socketId = ConnectionManager.GetId(socket);
             await ConnectionManager.RemoveSocket(socketId);
-            ConnectionManager.RemoveUser(socketId);
+
+            string username = ConnectionManager.GetUsernameBySocketId(socketId);
+            ConnectionManager.RemoveUser(username);
+
+            return username;
         }
 
         public async Task SendMessageAsync(WebSocket socket, string message)
@@ -85,6 +89,11 @@ namespace ChatApp
         public async Task BroadcastMessage(string message)
         {
             await SendMessageToAllAsync(message);
+        }
+
+        public List<string> GetAllUsers()
+        {
+            return ConnectionManager.GetAllUsernames();
         }
 
     }

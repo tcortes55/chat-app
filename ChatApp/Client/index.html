@@ -134,7 +134,13 @@
                     chatLog.innerHTML += '<p>' + htmlEscape(receivedMessage.Content) + '</p>';
                 }
 
-                if (receivedMessage.Type === "CONNECTION") {
+                if (receivedMessage.Type === "CONNECTION" && receivedMessage.Users) {
+                    usersList.options = [];
+                    var cFirst = document.createElement("option");
+                    cFirst.value = "";
+                    cFirst.text = "Everybody"
+                    usersList.add(cFirst);
+
                     receivedMessage.Users.forEach((user) => {
                         var c = document.createElement("option");
                         c.value = user;

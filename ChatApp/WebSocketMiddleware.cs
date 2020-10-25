@@ -56,7 +56,7 @@ namespace ChatApp
 
                 else if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    await _webSocketHandler.OnDisconnected(socket);
+                    await HandleDisconnect(socket);
                     return;
                 }
 
@@ -132,6 +132,15 @@ namespace ChatApp
             //await SendMessageToAllAsync(JsonSerializer.Serialize(disconnectMessage), cancellationToken);
         }
 
+        private async Task HandleDisconnect(WebSocket socket)
+        {
+            string disconnectedUser = await _webSocketHandler.OnDisconnected(socket);
+
+            ServerMessage disconnectMessage = new ServerMessage(disconnectedUser, true, _webSocketHandler.GetAllUsers());
+
+            await _webSocketHandler.BroadcastMessage(JsonSerializer.Serialize(disconnectMessage));
+        }
+
         private async Task HandleMessage(WebSocket socket, string message)
         {
             ClientMessage clientMessage = JsonSerializer.Deserialize<ClientMessage>(message);
@@ -142,14 +151,14 @@ namespace ChatApp
 
                 if (validate)
                 {
-                    ServerMessage serverMessage = new ServerMessage(clientMessage, false);
-                    await _webSocketHandler.BroadcastMessage(JsonSerializer.Serialize(serverMessage));
+                    ServerMessage connectMessage = new ServerMessage(clientMessage.Sender, false, _webSocketHandler.GetAllUsers());
+                    await _webSocketHandler.BroadcastMessage(JsonSerializer.Serialize(connectMessage));
                 }
             }
             else if (clientMessage.IsTypeChat())
             {
-                ServerMessage serverMessage = new ServerMessage(clientMessage, false);
-                await _webSocketHandler.BroadcastMessage(JsonSerializer.Serialize(serverMessage));
+                ServerMessage chatMessage = new ServerMessage(clientMessage);
+                await _webSocketHandler.BroadcastMessage(JsonSerializer.Serialize(chatMessage));
             }
         }
 

@@ -37,22 +37,11 @@ namespace ChatApp
             return true;
         }
 
-        public string BuildMessageBody(bool isDisconnect)
+        public string BuildChatMessageBody()
         {
-            if (this.IsTypeChat())
-            {
-                string receiver = this.Receiver == string.Empty ? "Everybody" : this.Receiver;
+            string receiver = this.Receiver == string.Empty ? "Everybody" : this.Receiver;
 
-                return $"{this.Sender} to {receiver}: {this.Content}";
-            }
-            else if (isDisconnect)
-            {
-                return $"User {this.Sender} left the room.";
-            }
-            else
-            {
-                return $"User {this.Sender} joined the room.";
-            }
+            return $"{this.Sender} to {receiver}: {this.Content}";
         }
 
         public string GetMessageType()
