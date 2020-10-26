@@ -38,6 +38,11 @@ namespace ChatApp
             return _users.FirstOrDefault(p => p.Value == socketId).Key;
         }
 
+        public string GetUsernameBySocket(WebSocket socket)
+        {
+            string socketId = GetId(socket);
+            return GetUsernameBySocketId(socketId);
+        }
 
         public void AddSocket(WebSocket socket)
         {

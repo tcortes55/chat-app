@@ -111,5 +111,9 @@ namespace ChatApp
             return ConnectionManager.GetAllUsernames();
         }
 
+        public string GetUsernameBySocket(WebSocket socket)
+        {
+            return ConnectionManager.GetUsernameBySocket(socket);
+        }
     }
 }
