@@ -18,7 +18,7 @@ The solution can be roughly divided in three main parts:
 
 - WebSocketMiddleware: when a WebSocket request is received, it accepts the connection and redirects the socket to OnConnected method from the handler. It validates that a unique username is being used (more on that later) and then awaits for new data as long as the socket is in the Open state.
 
-### Details
+### Implementation details
 
 A very basic implementation of WebSockets in ASP.NET Core could have methods `AcceptWebSocketAsync`, `ReceiveAsync`, `SendAdync` and `CloseAsync`. A server would receive a WebSocket connection and answer the handshake, and then await for data to be received. This data could then be sent to connected users. The server could also receive a closing message, and then close the WebSocket.
 
@@ -40,13 +40,16 @@ One way to achieve this: upon completing the handshake, the client could send th
 The solution has two classes representing two types of message: `ClientMessage` and `ServerMessage`.
 
 `ClientMessage` is the message sent from the client to the server. It contains the follwing attributes:
-- Type: it has two possible values, `CHAT` (indicates that it is a message to be sent to other users) OR `CONNECTION` (to be sent to the server on WebSocket opening; currently it is not being used but it was kept for future improvements).
-- Sender: corresponds to the sender's username.
-- Receiver: the user to whom the message is destined; if empty, the server assumes the recipient is "Everybody".
-- Content: the actual message content, from user's input.
-- IsPrivate: indicates whether the message should be sent in private to the Receiver (FOR FUTURE IMPLEMENTATION).
+- `Type`: it has two possible values, `CHAT` (indicates that it is a message to be sent to other users) OR `CONNECTION` (to be sent to the server on WebSocket opening; currently it is not being used but it was kept for future improvements).
+- `Sender`: corresponds to the sender's username.
+- `Receiver`: the user to whom the message is destined; if empty, the server assumes the recipient is "Everybody".
+- `Content`: the actual message content, from user's input.
+- `IsPrivate`: indicates whether the message should be sent in private to the Receiver (FOR FUTURE IMPLEMENTATION).
 
-
+`ServerMessage` is the message sent from the server to the clients. It is triggered whenever a user connects, disconnects or sends a message. It contains the follwing attributes:
+- `Type`: it has two possible values, `CHAT` (indicates that it is a chat message received from a user that is being sent to the other users) OR `CONNECTION` (indicates whether a user has entered or left the room).
+- `Content`: the actual message content. In case this is a chat message, the content is built according to the original `ClientMessage`: `<Sender> to <Receiver: <Content>`. If it's a connection message, the content indicates the username and whether they entered or joined the room, e.g. `<Username> has left the room`.
+- `Users`: returns a list of connected users. The client receives this list in order to enable a user to choose who should be the receiver of a message.
 
 ### References
 
