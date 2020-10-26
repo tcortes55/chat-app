@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,29 +18,43 @@ namespace ChatApp
             ConnectionManager = connectionManager;
         }
 
-        public virtual async Task OnConnected(WebSocket socket)
+        public virtual async Task OnConnected(WebSocket socket, string username)
         {
-            ConnectionManager.AddSocket(socket);
-        }
+            string connectionError = ValidateConnection(username);
 
-        public virtual async Task<bool> ValidateConnection(WebSocket socket, string username)
-        {
-            if (ConnectionManager.UsernameAlreadyExists(username))
+            if (!string.IsNullOrEmpty(connectionError))
             {
-                await ConnectionManager.RemoveSocket(ConnectionManager.GetId(socket), $"User {username} already exists");
-                return false;
+                await ConnectionManager.RemoveSocket(socket, connectionError);
             }
             else
             {
+                ConnectionManager.AddSocket(socket);
                 ConnectionManager.AddUser(socket, username);
-                return true;
+
+                ServerMessage connectMessage = new ServerMessage(username, false, GetAllUsers());
+                await BroadcastMessage(JsonSerializer.Serialize(connectMessage));
             }
+        }
+
+        public string ValidateConnection(string username)
+        {
+            if (String.IsNullOrEmpty(username))
+            {
+                return $"Username must not be empty";
+            }
+
+            if (ConnectionManager.UsernameAlreadyExists(username))
+            {
+                return $"User {username} already exists";
+            }
+
+            return null;
         }
 
         public virtual async Task<string> OnDisconnected(WebSocket socket)
         {
             string socketId = ConnectionManager.GetId(socket);
-            await ConnectionManager.RemoveSocket(socketId);
+            await ConnectionManager.RemoveSocket(socket);
 
             string username = ConnectionManager.GetUsernameBySocketId(socketId);
             ConnectionManager.RemoveUser(username);

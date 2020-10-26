@@ -32,8 +32,10 @@ namespace ChatApp
                 return;
             }
 
+            string username = context.Request.Query["username"];
+
             WebSocket socket = await context.WebSockets.AcceptWebSocketAsync();
-            await _webSocketHandler.OnConnected(socket);
+            await _webSocketHandler.OnConnected(socket, username);
 
             await Receive(socket, async (result, buffer) =>
             {
@@ -70,13 +72,13 @@ namespace ChatApp
 
             if (clientMessage.IsTypeConnection())
             {
-                bool validate = await _webSocketHandler.ValidateConnection(socket, clientMessage.Sender);
+                //bool validate = await _webSocketHandler.ValidateConnection(socket, clientMessage.Sender);
 
-                if (validate)
-                {
-                    ServerMessage connectMessage = new ServerMessage(clientMessage.Sender, false, _webSocketHandler.GetAllUsers());
-                    await _webSocketHandler.BroadcastMessage(JsonSerializer.Serialize(connectMessage));
-                }
+                //if (validate)
+                //{
+                //    ServerMessage connectMessage = new ServerMessage(clientMessage.Sender, false, _webSocketHandler.GetAllUsers());
+                //    await _webSocketHandler.BroadcastMessage(JsonSerializer.Serialize(connectMessage));
+                //}
             }
             else if (clientMessage.IsTypeChat())
             {
