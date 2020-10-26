@@ -20,7 +20,7 @@ namespace ChatApp
 
         public virtual async Task OnConnected(WebSocket socket, string username)
         {
-            string connectionError = ValidateConnection(username);
+            string connectionError = ValidateUsername(username);
 
             if (!string.IsNullOrEmpty(connectionError))
             {
@@ -36,7 +36,7 @@ namespace ChatApp
             }
         }
 
-        public string ValidateConnection(string username)
+        public string ValidateUsername(string username)
         {
             if (String.IsNullOrEmpty(username))
             {
