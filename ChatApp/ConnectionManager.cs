@@ -38,6 +38,11 @@ namespace ChatApp
             return _users.FirstOrDefault(p => p.Value == socketId).Key;
         }
 
+        public string GetUsernameBySocket(WebSocket socket)
+        {
+            string socketId = GetId(socket);
+            return GetUsernameBySocketId(socketId);
+        }
 
         public void AddSocket(WebSocket socket)
         {
@@ -51,10 +56,13 @@ namespace ChatApp
             _users.TryAdd(username, socketId);
         }
 
-        public async Task RemoveSocket(string id, string description = "Connection closed")
+        public async Task RemoveSocket(WebSocket socket, string description = "Connection closed")
         {
-            WebSocket socket;
-            _sockets.TryRemove(id, out socket);
+            string id = GetId(socket);
+            if (!string.IsNullOrEmpty(id))
+            {
+                _sockets.TryRemove(id, out _);
+            }
 
             if (socket.State != WebSocketState.Aborted)
             {

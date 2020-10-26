@@ -32,8 +32,10 @@ namespace ChatApp
                 return;
             }
 
+            string username = context.Request.Query["username"];
+
             WebSocket socket = await context.WebSockets.AcceptWebSocketAsync();
-            await _webSocketHandler.OnConnected(socket);
+            await _webSocketHandler.OnConnected(socket, username);
 
             await Receive(socket, async (result, buffer) =>
             {
@@ -66,22 +68,39 @@ namespace ChatApp
 
         private async Task HandleMessage(WebSocket socket, string message)
         {
-            ClientMessage clientMessage = JsonSerializer.Deserialize<ClientMessage>(message);
+            ClientMessage clientMessage = TryDeserializeClientMessage(message);
+
+            if (clientMessage == null)
+            {
+                return;
+            }
 
             if (clientMessage.IsTypeConnection())
             {
-                bool validate = await _webSocketHandler.ValidateConnection(socket, clientMessage.Sender);
-
-                if (validate)
-                {
-                    ServerMessage connectMessage = new ServerMessage(clientMessage.Sender, false, _webSocketHandler.GetAllUsers());
-                    await _webSocketHandler.BroadcastMessage(JsonSerializer.Serialize(connectMessage));
-                }
+                // For future improvements
             }
             else if (clientMessage.IsTypeChat())
             {
-                ServerMessage chatMessage = new ServerMessage(clientMessage);
-                await _webSocketHandler.BroadcastMessage(JsonSerializer.Serialize(chatMessage));
+                string expectedUsername = _webSocketHandler.GetUsernameBySocket(socket);
+
+                if (clientMessage.IsValid(expectedUsername))
+                {
+                    ServerMessage chatMessage = new ServerMessage(clientMessage);
+                    await _webSocketHandler.BroadcastMessage(JsonSerializer.Serialize(chatMessage));
+                }
+            }
+        }
+
+        private ClientMessage TryDeserializeClientMessage(string str)
+        {
+            try
+            {
+                return JsonSerializer.Deserialize<ClientMessage>(str);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: invalid message format");
+                return null;
             }
         }
 

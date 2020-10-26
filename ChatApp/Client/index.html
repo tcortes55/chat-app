@@ -36,7 +36,8 @@
         var closeButton = document.getElementById("closeButton");
         var socket;
 
-        var connectionUrl = "ws://localhost:58078/ws";
+        console.log(userName.value);
+        var connectionUrl = "ws://localhost:58078/ws?username=";
 
         function updateState() {
             function disable() {
@@ -110,16 +111,16 @@
 
         connectButton.onclick = function () {
             stateLabel.innerHTML = "Connecting";
-            socket = new WebSocket(connectionUrl);
+            socket = new WebSocket(connectionUrl + userName.value);
             socket.onopen = function (event) {
                 updateState();
 
                 console.log("socket opened", event);
-                var message = {};
-                message.Type = "connection";
-                message.Sender = userName.value;
-                console.log(JSON.stringify(message));
-                socket.send(JSON.stringify(message));
+                //var message = {};
+                //message.Type = "connection";
+                //message.Sender = userName.value;
+                //console.log(JSON.stringify(message));
+                //socket.send(JSON.stringify(message));
             };
             socket.onclose = function (event) {
                 updateState();

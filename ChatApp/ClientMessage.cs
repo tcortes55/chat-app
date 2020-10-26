@@ -13,7 +13,7 @@ namespace ChatApp
         public string Content { get; set; }
         public bool? IsPrivate { get; set; }
 
-        public bool IsValid()
+        public bool IsValid(string expectedUsername)
         {
             if (this.IsTypeConnection())
             {
@@ -24,7 +24,7 @@ namespace ChatApp
             }
             else if (this.IsTypeChat())
             {
-                if (this.Sender == string.Empty || this.Content == string.Empty)
+                if (this.Sender != expectedUsername || this.Content == string.Empty)
                 {
                     return false;
                 }
