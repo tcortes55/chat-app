@@ -30,14 +30,13 @@ One of the requirements for this project is that usernames must be unique. There
 
 The way this requirement was implemented was quite simple, using the request query string. When a client sends a WebSocket request, the username is sent as in `ws://myserver/ws?username=MYUSERNAME`. The server then validates if `MYUSERNAME` is a valid username (unique, non-empty); if so, it is added to the collection of users/sockets, otherwise the socket is closed and the user receives the corresponding error message.
 
-It is important to note that the query string should be used carefully. Sensitive data should not be exposed in query string, even if using HTTPS or WSS (content is encrypted but URL could be recorded in server logs, for example). We could use some other options in order to send data to the server:
+It is important to note that the query string should be used carefully. Sensitive data should not be exposed in query string, even if using HTTPS or WSS (content is encrypted but the URL could be recorded in server logs, for example). We could use some other options in order to send data to the server:
 - Upon completing the handshake, send data in a message as a callback to `socket.onopen`.
-One way to achieve this: upon completing the handshake, the client could send the username (and possibly other data) in a message on `socket.onopen`. The server would then validate the data and, if not, it would close the socket.
 - Separate responsibilities appropriately. Suppose our chat app requires authentication: instead of sending username and password in the WebSocket request query string, the credentials could be sent in an HTTP POST request to the server, who would then send a response with an access token. The token could then be sent in the WebSocket request query string, without risking exposing the credentials and avoiding mixing the authentication and the actual WebSocket handling.
 
 #### Message structure
 
-The solution has two classes representing two types of message: `ClientMessage` and `ServerMessage`.
+The solution has two classes representing two types of message: `ClientMessage` and `ServerMessage`. They should be sent from the client in JSON format and the server parses them accordingly.
 
 `ClientMessage` is the message sent from the client to the server. It contains the follwing attributes:
 - `Type`: it has two possible values, `CHAT` (indicates that it is a message to be sent to other users) OR `CONNECTION` (to be sent to the server on WebSocket opening; currently it is not being used but it was kept for future improvements).
@@ -50,6 +49,20 @@ The solution has two classes representing two types of message: `ClientMessage` 
 - `Type`: it has two possible values, `CHAT` (indicates that it is a chat message received from a user that is being sent to the other users) OR `CONNECTION` (indicates whether a user has entered or left the room).
 - `Content`: the actual message content. In case this is a chat message, the content is built according to the original `ClientMessage`: `<Sender> to <Receiver: <Content>`. If it's a connection message, the content indicates the username and whether they entered or joined the room, e.g. `<Username> has left the room`.
 - `Users`: returns a list of connected users. The client receives this list in order to enable a user to choose who should be the receiver of a message.
+
+#### Validation
+
+Besides validating whether usernames are unique and non-empty upon connection opening, the server also validates the incoming messages. In case an incoming message is not in a valid JSON format, it is ignored. Messages with an invalid value for `Type` are also ignored.
+
+The server also verifies if the message `Sender` does in fact correspond to the socket's user. This way, a user cannot spoof someone else's username; if the client's message value for `Sender` and the user's actual username differ, the message is ignored.
+
+The client has a `Disconnect` button, however, the user may close the browser tab while the WebSocket is still open. In those cases, the server cannot complete the closing handshake and an exception is thrown. This solution handles this situation gracefully; in case such an error occurs, the exception is catched and the other users are notified that a user left the room.
+
+### Future improvements
+
+- Allow sending of private messages
+- Add other chat rooms and let the user choose which one to enter before connecting
+- Allow user to create a new chat room
 
 ### References
 
