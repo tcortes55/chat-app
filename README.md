@@ -38,11 +38,11 @@ The way this requirement was implemented was quite simple, using the request que
 
 It is important to note that the query string should be used carefully. Sensitive data should not be exposed in query string, even if using HTTPS or WSS (content is encrypted but the URL could be recorded in server logs, for example). We could use some other options in order to send data to the server:
 - Upon completing the handshake, send data in a message as a callback to `socket.onopen`.
-- Separate responsibilities appropriately. Suppose our chat app requires authentication: instead of sending username and password in the WebSocket request query string, the credentials could be sent in an HTTP POST request to the server, who would then send a response with an access token. The token could then be sent in the WebSocket request query string, without risking exposing the credentials and avoiding mixing the authentication and the actual WebSocket handling.
+- Separate responsibilities appropriately. Suppose our chat app requires authentication: instead of sending username and password in the WebSocket request query string, the credentials could be sent in an HTTP POST request to the server, who would then send a response with an access token. Then, the token could be sent in the WebSocket request query string, without risking exposing the credentials, and avoiding coupling the authentication with the actual WebSocket handling.
 
 #### Message structure
 
-The solution has two classes representing two types of message: `ClientMessage` and `ServerMessage`. They should be sent from the client in JSON format and the server parses them accordingly.
+The solution has two classes representing two types of message: `ClientMessage` and `ServerMessage`, which should be sent in JSON format.
 
 `ClientMessage` is the message sent from the client to the server. It contains the follwing attributes:
 - `Type`: it has two possible values, `CHAT` (indicates that it is a message to be sent to other users) OR `CONNECTION` (to be sent to the server on WebSocket opening; currently it is not being used but it was kept for future improvements).
