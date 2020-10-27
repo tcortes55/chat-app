@@ -12,7 +12,7 @@ A chat service consists in a server that allows simultaneous connection from dif
 
 Download and build the solution with MS Visual Studio. Open a console window, navigate to the project folder and run command `dotnet run`. Open file `.\Client\index.html` and use the application. You can open several instances of clients, each one in a different browser tab.
 
-The client is configured to connect to port `5000` in `localhost`. In case of any troubles, check if server and client are using the same port.
+The client is configured to connect to port `5000` in `localhost`; see file `.\Client\index.html`. In case of any troubles, check if server and client are using the same port.
 
 ### Solution description
 
@@ -69,6 +69,8 @@ The client has a `Disconnect` button, however, the user may close the browser ta
 - Allow sending of private messages
 - Add other chat rooms and let the user choose which one to enter before connecting
 - Allow user to create a new chat room
+- Build a nice user interface
+- Deploy the application to Heroku using Docker
 
 ### References
 
