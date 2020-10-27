@@ -8,6 +8,12 @@ The application was developed in ASP.NET Core 3.1, using MS Visual Studio 2019. 
 
 A chat service consists in a server that allows simultaneous connection from different clients for message exchange. Before connecting, the user must choose a unique nickname and then enter a chat room, where they will be able to send and receive messages to other connected users.
 
+### Instructions
+
+Download and build the solution with MS Visual Studio. Open a console window, navigate to the project folder and run command `dotnet run`. Open file `.\Client\index.html` and use the application. You can open several instances of clients, each one in a different browser tab.
+
+The client is configured to connect to port `5000` in `localhost`. In case of any troubles, check if server and client are using the same port.
+
 ### Solution description
 
 The solution can be roughly divided in three main parts:
