@@ -15,7 +15,7 @@
     <div>
         <label for="sendMessage">Message to send:</label>
         <input id="sendMessage" disabled />
-        <select name="usersList" id="usersList">
+        <select name="usersList" id="usersList" disabled>
             <option value="">Everybody</option>
         </select>
         <button id="sendButton" type="submit" disabled>Send</button>
@@ -37,21 +37,24 @@
         var socket;
 
         console.log(userName.value);
-        var connectionUrl = "ws://localhost:58078/ws?username=";
+        var connectionUrl = "ws://localhost:5000/ws?username=";
 
         function updateState() {
             function disable() {
                 sendMessage.disabled = true;
                 sendButton.disabled = true;
                 closeButton.disabled = true;
+                usersList.disabled = true;
             }
             function enable() {
                 sendMessage.disabled = false;
                 sendButton.disabled = false;
                 closeButton.disabled = false;
+                usersList.disabled = false;
             }
 
             connectButton.disabled = true;
+            userName.disabled = true;
 
             if (!socket) {
                 disable();
@@ -62,6 +65,7 @@
                         disable();
                         //connectionUrl.disabled = false;
                         connectButton.disabled = false;
+                        userName.disabled = false;
                         break;
                     case WebSocket.CLOSING:
                         stateLabel.innerHTML = "Closing...";
