@@ -66,7 +66,7 @@ The client has a `Disconnect` button, however, the user may close the browser ta
 
 ### Future improvements
 
-- Allow sending of private messages
+- Allow sending private messages
 - Add other chat rooms and let the user choose which one to enter before connecting
 - Allow user to create a new chat room
 - Build a nice user interface
